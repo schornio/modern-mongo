@@ -7,22 +7,19 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-as-promised'));
 
-const mongodb = require('mongodb');
+const mm = require('../index');
 
 describe('MongoDB Collection', function () {
-  const Document = require('../lib/document');
-  const Collection = require('../lib/collection');
-
   let db;
   let testCollection;
 
-  class TestDocument extends Document {
+  class TestDocument extends mm.Document {
     constructor(db) {
       super(db);
     }
   }
 
-  class TestCollection extends Collection {
+  class TestCollection extends mm.Collection {
     constructor(db) {
       super(db, TestDocument, COLLECTION_NAME);
     }
@@ -30,7 +27,7 @@ describe('MongoDB Collection', function () {
 
   before(function () {
     chai.assert.ok(TEST_DB, 'Environment: TEST_DB');
-    return mongodb.MongoClient
+    return mm
       .connect(TEST_DB)
       .then((connectedDb) => db = connectedDb)
       .then(() => testCollection = new TestCollection(db));
