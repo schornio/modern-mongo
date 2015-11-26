@@ -1,5 +1,9 @@
 # Modern Mongo
 
+[![Build Status](https://travis-ci.org/Aetherwave/modern-mongo.svg)](https://travis-ci.org/Aetherwave/modern-mongo)
+
+Modern interface for MongoDB. Written in ES6.
+
 ## Installation
 
     npm install modern-mongo

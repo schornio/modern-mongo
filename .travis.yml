@@ -1,0 +1,8 @@
+services:
+  - mongodb
+language: node_js
+node_js:
+  - "5"
+  - "4"
+env:
+  - TEST_DB="mongodb://127.0.0.1/modern_mongo"
