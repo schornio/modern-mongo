@@ -9,7 +9,7 @@ chai.use(require('chai-as-promised'));
 
 const mm = require('../index');
 
-describe('MongoDB Collection', function () {
+describe('MongoDB Collection with VersionedDocument', function () {
   let db;
   let testCollection;
 
