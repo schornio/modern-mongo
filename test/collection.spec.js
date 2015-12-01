@@ -14,8 +14,8 @@ describe('MongoDB Collection', function () {
   let testCollection;
 
   class TestDocument extends mm.Document {
-    constructor(db) {
-      super(db);
+    constructor(db, collection_name) {
+      super(db, collection_name);
     }
   }
 

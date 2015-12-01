@@ -10,12 +10,13 @@ chai.use(require('chai-as-promised'));
 const mm = require('../index');
 
 describe('Versioned MongoDB Document', () => {
+  let db;
   let db_collection;
   let db_collection_history;
 
   class TestDocument extends mm.VersionedDocument {
-    constructor(db_collection, db_collection_history) {
-      super(db_collection, db_collection_history);
+    constructor(db) {
+      super(db, COLLECTION_NAME);
     }
   }
 
@@ -24,8 +25,9 @@ describe('Versioned MongoDB Document', () => {
     return mm
       .connect(TEST_DB)
       .then((connectedDb) => {
-         db_collection = connectedDb.collection(COLLECTION_NAME);
-         db_collection_history = connectedDb.collection(COLLECTION_NAME + '_history');
+        db = connectedDb;
+        db_collection = connectedDb.collection(COLLECTION_NAME);
+        db_collection_history = connectedDb.collection(COLLECTION_NAME + '_history');
        });
   });
 
@@ -36,8 +38,8 @@ describe('Versioned MongoDB Document', () => {
     ]);
   });
 
-  it('should save new document - versioned', () => {
-    let newTestDocument = new TestDocument(db_collection, db_collection_history);
+  it('should save new document', () => {
+    let newTestDocument = new TestDocument(db);
     newTestDocument.message = 'Hallo Welt!';
 
     return expect(newTestDocument.save().then(() => db_collection.findOne()))
@@ -74,7 +76,7 @@ describe('Versioned MongoDB Document', () => {
       _v: 1,
       message: 'Hallo Welt'
     };
-    let newTestDocument = new TestDocument(db_collection, db_collection_history);
+    let newTestDocument = new TestDocument(db);
     newTestDocument.apply(bareTestDocument);
 
     return expect(db_collection
@@ -91,7 +93,7 @@ describe('Versioned MongoDB Document', () => {
   });
 
   it('should apply properties from bare object', () => {
-    let testDocument = new TestDocument(db_collection, db_collection_history);
+    let testDocument = new TestDocument(db);
 
     testDocument.propertyA = 'propA';
     testDocument.propertyB = 'propB';
@@ -111,7 +113,7 @@ describe('Versioned MongoDB Document', () => {
   });
 
   it('should validate document', () => {
-    let testDocument = new TestDocument(db_collection, db_collection_history);
+    let testDocument = new TestDocument(db);
 
     expect(testDocument.validate()).to.be.equal(true);
 
@@ -126,7 +128,7 @@ describe('Versioned MongoDB Document', () => {
       _v: 1,
       message: 'Hallo Welt'
     };
-    let newTestDocument = new TestDocument(db_collection, db_collection_history);
+    let newTestDocument = new TestDocument(db);
     newTestDocument.apply(bareTestDocument);
 
     return expect(db_collection

@@ -10,11 +10,12 @@ chai.use(require('chai-as-promised'));
 const mm = require('../index');
 
 describe('MongoDB Document', () => {
+  let db;
   let db_collection;
 
   class TestDocument extends mm.Document {
-    constructor(db_collection) {
-      super(db_collection);
+    constructor(db) {
+      super(db, 'test');
     }
   }
 
@@ -22,7 +23,10 @@ describe('MongoDB Document', () => {
     chai.assert.ok(TEST_DB, 'Environment: TEST_DB');
     return mm
       .connect(TEST_DB)
-      .then((connectedDb) => db_collection = connectedDb.collection(COLLECTION_NAME));
+      .then((connectedDb) => {
+        db = connectedDb;
+        db_collection = connectedDb.collection(COLLECTION_NAME);
+      });
   });
 
   afterEach(() => {
@@ -30,7 +34,7 @@ describe('MongoDB Document', () => {
   });
 
   it('should save new document', () => {
-    let newTestDocument = new TestDocument(db_collection);
+    let newTestDocument = new TestDocument(db);
     newTestDocument.message = 'Hallo Welt!';
 
     return expect(newTestDocument.save().then(() => db_collection.findOne()))
@@ -42,7 +46,7 @@ describe('MongoDB Document', () => {
       _id: 1,
       message: 'Hallo Welt'
     };
-    let newTestDocument = new TestDocument(db_collection);
+    let newTestDocument = new TestDocument(db);
     newTestDocument.apply(bareTestDocument);
 
     return expect(db_collection
@@ -53,7 +57,7 @@ describe('MongoDB Document', () => {
   });
 
   it('should apply properties from bare object', () => {
-    let testDocument = new TestDocument(db_collection);
+    let testDocument = new TestDocument(db);
 
     testDocument.propertyA = 'propA';
     testDocument.propertyB = 'propB';
@@ -73,7 +77,7 @@ describe('MongoDB Document', () => {
   });
 
   it('should validate document', () => {
-    let testDocument = new TestDocument(db_collection);
+    let testDocument = new TestDocument(db);
 
     expect(testDocument.validate()).to.be.equal(true);
 

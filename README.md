@@ -21,10 +21,12 @@ Modern interface for MongoDB. Written in ES6.
 
     class PersonDocument extends mm.Document {
 
-      // Constructor have to be like this
-      constructor(collection) {
-        super(collection);
-        this[collection_symbol] = collection;
+      // Constructor have to be like this:
+      // - MongoDB connection
+      // - Collection name
+      constructor(db, collection_name) {
+        super(db, collection_name);
+        this[collection_symbol] = db.collection(collection_name);
       }
 
       // Create custom methods
