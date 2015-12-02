@@ -46,8 +46,8 @@ describe('Versioned MongoDB Document', () => {
       .to.eventually.deep.equal(newTestDocument)
       .and.to.have.property('_v', 1)
       .then(() => {
-        return expect(db_collection_history.find().toArray())
-          .to.eventually.be.deep.equal([]);
+        return expect(db_collection_history.find({}, { _id: 0 }).toArray())
+          .to.eventually.be.deep.equal([{ doc_id: newTestDocument._id, _v: 0 }]);
       })
       .then(() => {
         newTestDocument.message = 'Hallo schoene Welt!';
@@ -56,7 +56,7 @@ describe('Versioned MongoDB Document', () => {
           .and.to.have.property('_v', 2);
       })
       .then(() => {
-        return expect(db_collection_history.find().toArray())
+        return expect(db_collection_history.find({ _v: { $gt: 0 } }).toArray())
           .to.eventually.satisfy((docs) => {
             let doc = docs[0];
 
@@ -137,6 +137,25 @@ describe('Versioned MongoDB Document', () => {
       .then(() => newTestDocument.save())
       .then(() => db_collection.update({ _id: 1 }, { $set: { _v: 1 } }))
       .then(() => newTestDocument.save())
+    ).to.be.rejectedWith(/Cannot save new version/);
+  });
+
+  it('should handle multible saves at once', () => {
+    let bareTestDocument = {
+      _id: 1,
+      _v: 1,
+      message: 'Hallo Welt'
+    };
+    let newTestDocument = new TestDocument(db);
+    newTestDocument.apply(bareTestDocument);
+
+    return expect(Promise.all([
+        newTestDocument.save(),
+        newTestDocument.save(),
+        newTestDocument.save(),
+        newTestDocument.save(),
+        newTestDocument.save(),
+      ])
     ).to.be.rejectedWith(/Cannot save new version/);
   });
 
