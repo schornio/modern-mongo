@@ -33,7 +33,7 @@ describe('MongoDB Collection', function () {
       .then(() => testCollection = new TestCollection(db));
   });
 
-  afterEach(function () {
+  beforeEach(function () {
     return db.collection(COLLECTION_NAME).remove({});
   });
 

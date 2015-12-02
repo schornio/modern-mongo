@@ -31,7 +31,7 @@ describe('Versioned MongoDB Document', () => {
        });
   });
 
-  afterEach(() => {
+  beforeEach(() => {
     return Promise.all([
       db_collection.deleteMany({}),
       db_collection_history.deleteMany({})

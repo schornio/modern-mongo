@@ -29,7 +29,7 @@ describe('MongoDB Document', () => {
       });
   });
 
-  afterEach(() => {
+  beforeEach(() => {
     return db_collection.remove({});
   });
 

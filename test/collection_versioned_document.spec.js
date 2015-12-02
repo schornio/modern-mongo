@@ -33,7 +33,7 @@ describe('MongoDB Collection with VersionedDocument', function () {
       .then(() => testCollection = new TestCollection(db));
   });
 
-  afterEach(function () {
+  beforeEach(function () {
     return Promise.all([
       db.collection(COLLECTION_NAME).remove({}),
       db.collection(COLLECTION_NAME + '_history').remove({})
