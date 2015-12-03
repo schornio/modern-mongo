@@ -7,6 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-as-promised'));
 
+const mongodb = require('mongodb');
 const mm = require('../index');
 
 describe('MongoDB Document', () => {
@@ -84,6 +85,13 @@ describe('MongoDB Document', () => {
     delete testDocument._id;
 
     expect(testDocument.validate()).to.be.equal(false);
+  });
+
+  it('should expose db collection', () => {
+    let testDocument = new TestDocument(db);
+
+    expect(testDocument.getDBCollection())
+      .to.be.instanceOf(mongodb.Collection);
   });
 
 });
