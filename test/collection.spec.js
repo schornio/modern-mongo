@@ -74,6 +74,29 @@ describe('MongoDB Collection', function () {
       });
   });
 
+  it('should find one document in collection and update it', function () {
+    let bareTestDocument = { _id: 1, message: 'Hello World' };
+    return db.collection(COLLECTION_NAME)
+      .insert(bareTestDocument)
+      .then(() => {
+        bareTestDocument.message = 'Hello Thomas';
+
+        return expect(testCollection.findOneAndUpdate(
+          { _id: bareTestDocument._id },
+          { $set: { message: bareTestDocument.message } },
+          { returnOriginal: false }
+        )).to.eventually.be.an.instanceOf(TestDocument)
+          .and.to.be.deep.equal(bareTestDocument);
+      })
+      .then(() => {
+        return expect(testCollection.findOneAndUpdate(
+          { _id: 'not found' },
+          { $set: { message: bareTestDocument.message } },
+          { returnOriginal: false }
+        )).to.eventually.be.null;
+      });
+  });
+
   it('should remove many documents in collection', function () {
     let bareTestDocuments = [
       { _id: 1, message: 'Hello World 1' },
