@@ -7,6 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-as-promised'));
 
+const mongodb = require('mongodb');
 const mm = require('../index');
 
 describe('MongoDB Collection', function () {
@@ -113,6 +114,13 @@ describe('MongoDB Collection', function () {
         return expect(db.collection(COLLECTION_NAME).find().toArray())
           .to.eventually.deep.equal([]);
       });
+  });
+
+  it('should expose db collection', () => {
+    let testCollection = new TestCollection(db);
+
+    expect(testCollection.getDBCollection())
+      .to.be.instanceOf(mongodb.Collection);
   });
 
 });
