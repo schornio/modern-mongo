@@ -56,6 +56,11 @@ describe('MongoDB Collection', function () {
       });
   });
 
+  it('should return null if no document found', function () {
+    return expect(testCollection.findOne({ _id: 'not exists' }))
+      .to.eventually.be.null;
+  });
+
   it('should find many documents in collection', function () {
     let bareTestDocuments = [
       { _id: 1, message: 'Hello World 1' },
