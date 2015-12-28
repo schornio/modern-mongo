@@ -87,6 +87,17 @@ describe('MongoDB Document', () => {
     expect(testDocument.validate()).to.be.equal(false);
   });
 
+  it('should delete document', () => {
+    let newTestDocument = new TestDocument(db);
+    newTestDocument.message = 'Hallo Welt!';
+
+    return expect(
+      newTestDocument.save()
+      .then(() => newTestDocument.delete())
+      .then(() => db_collection.find().toArray())
+    ).to.eventually.deep.equal([]);
+  });
+
   it('should expose db collection', () => {
     let testDocument = new TestDocument(db);
 

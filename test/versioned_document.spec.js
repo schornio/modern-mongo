@@ -159,4 +159,5 @@ describe('Versioned MongoDB Document', () => {
     ).to.be.rejectedWith(/Cannot save new version/);
   });
 
+  it('should delete history if document#delete flag is set');
 });
