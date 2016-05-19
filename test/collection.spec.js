@@ -131,6 +131,32 @@ describe('MongoDB Collection', function () {
     return expect(testCollection.insertMany('not an array')).to.be.rejected;
   });
 
+  it('should update one document in collection', function () {
+    let bareTestDocument = { _id: 1, message: 'Hello World 1' };
+
+    return testCollection.updateOne(bareTestDocument, { upsert: true })
+      .then(() => {
+        expect(testCollection.findOne())
+          .to.eventually.deep.equal(bareTestDocument);
+      });
+  });
+
+  it('should update many documents in collection', function () {
+    let bareTestDocuments = [
+      { _id: 1, message: 'Hello World 1' },
+      { _id: 2, message: 'Hello World 2' },
+      { _id: 3, message: 'Hello World 3' }
+    ];
+
+    return testCollection.insertMany(bareTestDocuments)
+      .then(() => testCollection.updateMany({}, { '$set': { message: 'new message' } }))
+      .then(() => {
+        bareTestDocuments.forEach((doc) => doc.message = 'new message');
+        return expect(testCollection.findMany())
+          .to.eventually.deep.equal(bareTestDocuments);
+      });
+  });
+
   it('should remove many documents in collection', function () {
     let bareTestDocuments = [
       { _id: 1, message: 'Hello World 1' },
