@@ -108,7 +108,7 @@ describe('MongoDB Collection', function () {
 
     return testCollection.insertOne(bareTestDocument)
       .then(() => {
-        expect(testCollection.findOne())
+        return expect(testCollection.findOne())
           .to.eventually.deep.equal(bareTestDocument);
       });
   });
@@ -122,7 +122,7 @@ describe('MongoDB Collection', function () {
 
     return testCollection.insertMany(bareTestDocuments)
       .then(() => {
-        expect(testCollection.findMany())
+        return expect(testCollection.findMany())
           .to.eventually.deep.equal(bareTestDocuments);
       });
   });
@@ -134,9 +134,9 @@ describe('MongoDB Collection', function () {
   it('should update one document in collection', function () {
     let bareTestDocument = { _id: 1, message: 'Hello World 1' };
 
-    return testCollection.updateOne(bareTestDocument, { upsert: true })
+    return testCollection.updateOne({}, bareTestDocument, { upsert: true })
       .then(() => {
-        expect(testCollection.findOne())
+        return expect(testCollection.findOne())
           .to.eventually.deep.equal(bareTestDocument);
       });
   });
