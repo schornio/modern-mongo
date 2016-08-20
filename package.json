@@ -1,6 +1,6 @@
 {
   "name": "modern-mongo",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "description": "Modern interface for MongoDB. Written in ES6.",
   "main": "index.js",
   "scripts": {
