@@ -14,9 +14,15 @@ describe('MongoDB Document', () => {
   let db;
   let db_collection;
 
+  const dbWrapper = (db) => {
+    return {
+      getBare: () => db.collection(COLLECTION_NAME)
+    };
+  };
+
   class TestDocument extends mm.Document {
     constructor(db) {
-      super(db, 'test');
+      super(dbWrapper(db));
     }
   }
 

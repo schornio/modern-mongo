@@ -14,9 +14,17 @@ describe('Versioned MongoDB Document', () => {
   let db_collection;
   let db_collection_history;
 
+  const dbWrapper = (db) => {
+    return {
+      getBare: () => db.collection(COLLECTION_NAME),
+      getDB: () => db,
+      getName: () => COLLECTION_NAME
+    };
+  };
+
   class TestDocument extends mm.VersionedDocument {
     constructor(db) {
-      super(db, COLLECTION_NAME);
+      super(dbWrapper(db));
     }
   }
 
