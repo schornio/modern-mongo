@@ -93,6 +93,16 @@ describe('MongoDB Document', () => {
     expect(testDocument.validate()).to.be.equal(false);
   });
 
+  it('should update document field', () => {
+    let newTestDocument = new TestDocument(db);
+
+    return expect(
+      newTestDocument.save()
+      .then(() => newTestDocument.updateField('testField.field1', 'value1'))
+      .then(() => db_collection.find().toArray())
+    ).to.eventually.deep.equal([ { _id: newTestDocument._id, testField: { field1: 'value1' } } ]);
+  });
+
   it('should delete document', () => {
     let newTestDocument = new TestDocument(db);
     newTestDocument.message = 'Hallo Welt!';
