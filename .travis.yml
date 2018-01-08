@@ -2,8 +2,8 @@ services:
   - mongodb
 language: node_js
 node_js:
-  - "6"
-  - "5"
-  - "4"
+  - "8"
+  - "9"
 env:
+  - MODERN_MONGO_VALIDATE=false
   - TEST_DB="mongodb://127.0.0.1/modern_mongo"

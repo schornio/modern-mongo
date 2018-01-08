@@ -1,73 +1,69 @@
 # Modern Mongo
 
-[![Build Status](https://travis-ci.org/Aetherwave/modern-mongo.svg)](https://travis-ci.org/Aetherwave/modern-mongo)
+[![Build Status](https://travis-ci.org/JournalOne/modern-mongo.svg?branch=master)](https://travis-ci.org/JournalOne/modern-mongo)
 
-Modern interface for MongoDB. Written in ES6.
+Modern interface for MongoDB. Written in ES8.
 
 ## Installation
 
-    npm install modern-mongo
+```
+npm install modern-mongo
+```
+
+**Environment**
+
+- `MODERN_MONGO_VALIDATE`: string, if `false` it turns off Json-Schema validation
 
 ## Example
 
 **0. Initialisation**
 
-    const mm = require('mm');
+```
+const { connect, Document, Collection } = require('modern-mongo');
+
+...
+
+let db = await connect('connectionString');
+```
 
 **1. Create `Document` subclass**
+```
+class Person extends Document {
 
-    // Hide meta data with symbols
-    const collection_symbol = Symbol();
+  constructor() {
+    super();
+    this.setSchema(customJsonSchema);
+  }
 
-    class PersonDocument extends mm.Document {
+  // Create custom methods
 
-      // Constructor have to be like this:
-      // - MongoDB connection
-      // - Collection name
-      constructor(db, collection_name) {
-        super(db, collection_name);
-        this[collection_symbol] = db.collection(collection_name);
-      }
-
-      // Create custom methods
-      // Override existing functions like save or validate
-    }
-
+}
+```
 **2. Create `Collection` subclass**
+```
+const collectionName = 'persons';
 
-    // Hide meta data with symbols
-    const collection_symbol = Symbol();
+class PersonCollection extends Collection {
 
-    class PersonCollection extends mm.Collection {
+  constructor(db) {
+    super(db, PersonDocument, collectionName);
+  }
 
-      // Constructor have to be like this
-      constructor(db, collection_name) {
-        super(collection, PersonDocument, collection_name);
-        this[collection_symbol] = collection;
-      }
+  // Create custom methods
 
-      // Create custom methods
-      // Override existing functions like findOne or findMany
-    }
-
+}
+```
 
 **3. Use your subclasses**
+```
+let persons = new PersonCollection(db);
+let person = new Person();
 
-    let promisedConnection = mm.connect('mongodb_connection_string');
+person.name = 'Thomas';
+person.hobbies = [ 'programming', 'running', 'gaming' ];
 
-    promisedConnection.then((db) => {
-      let persons = new PersonCollection(db, 'persons');
-      let person = persons.new();
-
-      person.name = 'Thomas';
-      person.hobbies = [ 'programming', 'running', 'gaming' ];
-
-      person.save()
-        .then(() => persons.findOne())
-        .then(console.log); // PersonDocument { name: 'Thomas', ... }
-    })
-
-
+await persons.insertOneSafe(person);
+```
 
 ## Test
 

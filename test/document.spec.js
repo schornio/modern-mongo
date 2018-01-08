@@ -3,87 +3,103 @@
 const TEST_DB = process.env.TEST_DB;
 const COLLECTION_NAME = 'test';
 
-const chai = require('chai');
-const expect = chai.expect;
-chai.use(require('chai-as-promised'));
+const { expect } = require('chai');
 
-const mongodb = require('mongodb');
-const mm = require('../index');
+const errors = require('../lib/errors');
+const { connect, Document, Collection } = require('../index');
 
 describe('MongoDB Document', () => {
-  let db;
-  let db_collection;
 
-  const dbWrapper = (db) => {
-    return {
-      getBare: () => db.collection(COLLECTION_NAME)
-    };
-  };
+  let client = null;
+  let db = null;
+  let collection = null;
 
-  class TestDocument extends mm.Document {
-    constructor(db) {
-      super(dbWrapper(db));
+  class TestDocument extends Document {
+
+    constructor () {
+      super();
+
+      this.setSchema({
+        definitions: {
+        },
+        properties: {
+          _id: {
+            pattern: "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+            type: "string"
+          },
+          testProp: {
+            type: "string",
+            enum: [ "valid" ]
+          }
+        },
+        required: [
+          "_id"
+        ],
+        type: "object"
+      });
+
     }
+
   }
 
-  before(() => {
-    chai.assert.ok(TEST_DB, 'Environment: TEST_DB');
-    return mm
-      .connect(TEST_DB)
-      .then((connectedDb) => {
-        db = connectedDb;
-        db_collection = connectedDb.collection(COLLECTION_NAME);
-      });
+  class TestCollection extends Collection {
+
+    constructor (db) {
+
+      super(db, TestDocument, COLLECTION_NAME);
+
+    }
+
+  }
+
+  before( async () => {
+
+    expect(TEST_DB).to.be.a('string').
+      that.has.lengthOf.above(0);
+
+    let connection = await connect(TEST_DB);
+
+    db = connection.db;
+    client = connection.client;
+
+    collection = db.collection(COLLECTION_NAME);
+
   });
 
-  beforeEach(() => {
-    return db_collection.remove({});
+  beforeEach( async () => {
+
+    await collection.remove({});
+
   });
 
-  it('should save new document', () => {
-    let newTestDocument = new TestDocument(db);
-    newTestDocument.message = 'Hallo Welt!';
+  after( async () => {
 
-    return expect(newTestDocument.save().then(() => db_collection.findOne()))
-      .to.eventually.deep.equal(newTestDocument);
+    await client.close();
+
   });
 
-  it('should save existing document', () => {
-    let bareTestDocument = {
-      _id: 1,
-      message: 'Hallo Welt'
-    };
-    let newTestDocument = new TestDocument(db);
-    newTestDocument.apply(bareTestDocument);
+  it('should throw error if document is not associated with a collection', () => {
 
-    return expect(db_collection
-      .insert(bareTestDocument)
-      .then(() => newTestDocument.save())
-      .then(() => db_collection.findOne())
-    ).to.eventually.deep.equal(newTestDocument);
-  });
-
-  it('should apply properties from bare object', () => {
     let testDocument = new TestDocument(db);
 
-    testDocument.propertyA = 'propA';
-    testDocument.propertyB = 'propB';
+    let thrownError = null;
 
-    testDocument.apply({
-      propertyB: 'appliedPropB',
-      propertyC: 'propC'
-    });
+    try {
 
-    expect(testDocument)
-      .to.deep.equal({
-        _id: testDocument._id,
-        propertyA: 'propA',
-        propertyB: 'appliedPropB',
-        propertyC: 'propC'
-      });
+      testDocument.getCollection();
+
+    } catch (error) {
+
+      thrownError = error;
+
+    }
+
+    expect(thrownError.message).to.be.equal(errors.ERROR_CONNECTED_COLLECTION);
+
   });
 
   it('should validate document', () => {
+
     let testDocument = new TestDocument(db);
 
     expect(testDocument.validate()).to.be.equal(true);
@@ -91,34 +107,128 @@ describe('MongoDB Document', () => {
     delete testDocument._id;
 
     expect(testDocument.validate()).to.be.equal(false);
+
   });
 
-  it('should update document field', () => {
-    let newTestDocument = new TestDocument(db);
+  it('should apply all fields from a JavaScript object', () => {
 
-    return expect(
-      newTestDocument.save()
-      .then(() => newTestDocument.updateField('testField.field1', 'value1'))
-      .then(() => db_collection.find().toArray())
-    ).to.eventually.deep.equal([ { _id: newTestDocument._id, testField: { field1: 'value1' } } ]);
-  });
-
-  it('should delete document', () => {
-    let newTestDocument = new TestDocument(db);
-    newTestDocument.message = 'Hallo Welt!';
-
-    return expect(
-      newTestDocument.save()
-      .then(() => newTestDocument.delete())
-      .then(() => db_collection.find().toArray())
-    ).to.eventually.deep.equal([]);
-  });
-
-  it('should expose db collection', () => {
     let testDocument = new TestDocument(db);
 
-    expect(testDocument.getDBCollection())
-      .to.be.instanceOf(mongodb.Collection);
+    testDocument.applyBareObject({
+
+      appliedField1: true,
+      appliedField2: 200,
+      appliedField3: "okay"
+
+    });
+
+    let properties = Object.getOwnPropertyNames(testDocument);
+
+    expect(properties).to.include('_id');
+    expect(properties).to.include('appliedField1');
+    expect(properties).to.include('appliedField2');
+    expect(properties).to.include('appliedField3');
+
+    expect(properties).to.have.lengthOf(4);
+
+  });
+
+  it('should throw an error if a reserved keyword would be applied', () => {
+
+    let testDocument = new TestDocument(db);
+
+    let thrownError = null;
+
+    try {
+
+      testDocument.applyBareObject({
+
+        getCollection: true,
+
+      });
+
+    } catch (error) {
+
+      thrownError = error;
+
+    }
+
+    expect(thrownError.message).to.be.equal(`${errors.ERROR_RESERVED_KEYWORDS} (getCollection)`);
+
+  });
+
+  it('should set fields on document', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertOne(doc);
+    await doc.setFields({ newProp: true });
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.getCollection()).to.be.equal(collection);
+
+  });
+
+  it('should set fields on document safe', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertOne(doc);
+    await doc.setFieldsSafe({ newProp: true });
+
+    let thrownError = null;
+
+    try {
+
+      await doc.setFieldsSafe({ testProp: 'invalid' });
+
+    } catch (error) {
+
+      thrownError = error;
+
+    }
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.getCollection()).to.be.equal(collection);
+    expect(thrownError.message).to.be.equal(errors.ERROR_INVALID_DOCUMENT);
+
+  });
+
+  it('should delete itself', async () => {
+
+    let collection = new TestCollection(db);
+
+    let doc1 = new TestDocument(db);
+    doc1.sort = 1;
+    let doc2 = new TestDocument(db);
+    doc2.sort = 2;
+    let doc3 = new TestDocument(db);
+    doc3.sort = 3;
+    let docs = [ doc1, doc2, doc3 ];
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertMany(docs);
+
+    await doc2.deleteDocument();
+
+    let docsAfter = await collection.findMany({}, { sort: { sort: 1 } });
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc1, doc3 ]);
+
   });
 
 });
