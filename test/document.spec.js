@@ -98,6 +98,32 @@ describe('MongoDB Document', () => {
 
   });
 
+  it('should get document schema', () => {
+
+    let testDocument = new TestDocument(db);
+    let schema = testDocument.getSchema();
+
+    expect(schema).to.deep.equal({
+      definitions: {
+      },
+      properties: {
+        _id: {
+          pattern: "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+          type: "string"
+        },
+        testProp: {
+          type: "string",
+          enum: [ "valid" ]
+        }
+      },
+      required: [
+        "_id"
+      ],
+      type: "object"
+    });
+
+  });
+
   it('should validate document', () => {
 
     let testDocument = new TestDocument(db);

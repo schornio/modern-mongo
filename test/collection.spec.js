@@ -9,7 +9,7 @@ const uuid = require('uuid/v4');
 const errors = require('../lib/errors');
 const { connect, Document, Collection } = require('../index');
 
-describe('MongoDB Document', () => {
+describe('MongoDB Collection', () => {
 
   let client = null;
   let db = null;

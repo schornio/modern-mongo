@@ -1,4 +1,5 @@
 {
+  "$id": "modern-mongo/default",
   "definitions": {
   },
   "properties": {
