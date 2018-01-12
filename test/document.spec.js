@@ -261,12 +261,99 @@ describe('MongoDB Document', () => {
   it('should verify _id is a uuid', async () => {
 
     let doc = new Document(db);
-    
+
     doc._id = "012345678-0123-0123-0123-01234567890AB";
 
     expect(doc.validate()).to.be.equal(false);
 
     doc._id = uuid();
+
+    expect(doc.validate()).to.be.equal(true);
+
+  });
+
+  it('should verify arrays', async () => {
+
+    class TestDocument extends Document {
+
+      constructor () {
+        super();
+
+        this.setSchema({
+          definitions: {
+          },
+          properties: {
+            _id: {
+              pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              type: "string"
+            },
+            testProp: {
+              type: "string",
+              enum: [ "valid" ]
+            },
+            testArray: {
+              type: "array",
+              items: {
+                type: "string",
+                format: "date-time"
+              }
+            }
+          },
+          required: [
+            "_id"
+          ],
+          type: "object"
+        });
+
+      }
+
+    }
+
+    let doc = new TestDocument(db);
+
+    doc.testArray = [ new Date() ];
+
+    expect(doc.validate()).to.be.equal(true);
+
+  });
+
+  it('should verify a date field valid date', async () => {
+
+    class TestDocument extends Document {
+
+      constructor () {
+        super();
+
+        this.setSchema({
+          definitions: {
+          },
+          properties: {
+            _id: {
+              pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              type: "string"
+            },
+            testProp: {
+              type: "string",
+              enum: [ "valid" ]
+            },
+            testDateProp: {
+              type: "string",
+              format: "date-time"
+            }
+          },
+          required: [
+            "_id"
+          ],
+          type: "object"
+        });
+
+      }
+
+    }
+
+    let doc = new TestDocument(db);
+
+    doc.testDateProp = new Date();
 
     expect(doc.validate()).to.be.equal(true);
 
