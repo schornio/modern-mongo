@@ -233,6 +233,32 @@ describe('MongoDB Document', () => {
 
   });
 
+  it('should set fields on document deep', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    doc.arrProp = [];
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertOne(doc);
+    await doc.setFields({
+      'newProp.level1_1': true,
+      'newProp.level1_2': true,
+      'newProp.level1.level2': true,
+      'arrProp.0': true,
+      'notArrProp.1': true,
+    });
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.getCollection()).to.be.equal(collection);
+
+  });
+
   it('should delete itself', async () => {
 
     let collection = new TestCollection(db);
