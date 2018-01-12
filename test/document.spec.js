@@ -4,6 +4,7 @@ const TEST_DB = process.env.TEST_DB;
 const COLLECTION_NAME = 'test';
 
 const { expect } = require('chai');
+const uuid = require('uuid/v4');
 
 const errors = require('../lib/errors');
 const { connect, Document, Collection } = require('../index');
@@ -24,7 +25,7 @@ describe('MongoDB Document', () => {
         },
         properties: {
           _id: {
-            pattern: "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+            pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
             type: "string"
           },
           testProp: {
@@ -108,7 +109,7 @@ describe('MongoDB Document', () => {
       },
       properties: {
         _id: {
-          pattern: "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           type: "string"
         },
         testProp: {
@@ -254,6 +255,20 @@ describe('MongoDB Document', () => {
 
     expect(docsBefore).to.deep.equal([]);
     expect(docsAfter).to.deep.equal([ doc1, doc3 ]);
+
+  });
+
+  it('should verify _id is a uuid', async () => {
+
+    let doc = new Document(db);
+    
+    doc._id = "012345678-0123-0123-0123-01234567890AB";
+
+    expect(doc.validate()).to.be.equal(false);
+
+    doc._id = uuid();
+
+    expect(doc.validate()).to.be.equal(true);
 
   });
 
