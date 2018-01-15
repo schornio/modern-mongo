@@ -94,7 +94,9 @@ await persons.insertOneSafe(person);
 
 - `newDocument ()`
 - `async findOne (...args)`
+- `async findOneById (_id)`
 - `async findMany (...args)`
+- `async findManyByIds (_ids)`
 - `async findOneAndUpdateUnsafe (...args)`
 - `async insertOne (doc, options, safe)`
 - `async insertOneSafe (doc, options)`

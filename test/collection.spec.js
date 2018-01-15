@@ -143,6 +143,45 @@ describe('MongoDB Collection', () => {
 
   });
 
+  it('should find one by id', async () => {
+
+    let collection = new TestCollection(db);
+
+    let doc = new TestDocument(db);
+
+    let docBefore = await collection.findOneById(doc._id);
+    expect(docBefore).to.be.equal(null);
+
+    await collection.insertOne(doc);
+
+    let after = await collection.findOneById(doc._id);
+    expect(after).to.deep.equal(doc);
+
+  });
+
+  it('should find many by ids', async () => {
+
+    let collection = new TestCollection(db);
+
+    let doc1 = new TestDocument(db);
+    doc1.sort = 1;
+    let doc2 = new TestDocument(db);
+    doc2.sort = 2;
+    let doc3 = { _id: uuid() };
+    doc3.sort = 3;
+    let docs = [ doc1, doc2, doc3 ];
+    let docIds = docs.map((doc) => doc._id);
+
+    let docsBefore = await collection.findManyByIds(docIds);
+    expect(docsBefore).to.deep.equal([]);
+
+    await collection.insertMany(docs);
+
+    let docsAfter = await collection.findManyByIds(docIds);
+    expect(docsAfter).to.deep.equal(docs);
+
+  });
+
   it('should insert one modern-mongo document', async () => {
 
     let collection = new TestCollection(db);
