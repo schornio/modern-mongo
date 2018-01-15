@@ -259,6 +259,48 @@ describe('MongoDB Document', () => {
 
   });
 
+  it('should validate fields on document deep', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    doc.setSchema({
+      additionalProperties: false,
+      definitions: {
+      },
+      properties: {
+        _id: {
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          type: "string"
+        },
+        testProp: {
+          type: "object",
+          properties: {
+            deep: {
+              type: "boolean"
+            }
+          }
+        }
+      },
+      required: [
+        "_id"
+      ],
+      type: "object"
+    });
+
+    await collection.insertOne(doc);
+
+    await doc.setFieldsSafe({
+      'testProp.deep': true
+    });
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.getCollection()).to.be.equal(collection);
+
+  });
+
   it('should delete itself', async () => {
 
     let collection = new TestCollection(db);
