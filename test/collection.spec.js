@@ -177,7 +177,8 @@ describe('MongoDB Collection', () => {
 
     await collection.insertMany(docs);
 
-    let docsAfter = await collection.findManyByIds(docIds);
+    let docsAfter = await collection.findManyByIds(docIds, { sort: { sort: -1 } });
+    docs.reverse();
     expect(docsAfter).to.deep.equal(docs);
 
   });
