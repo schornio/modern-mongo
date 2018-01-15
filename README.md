@@ -74,3 +74,34 @@ await persons.insertOneSafe(person);
 **Command**
 
     npm test
+
+## API
+
+### `class Document`
+
+- `getCollection ()`
+- `setCollection (collection)`
+- `getSchema ()`
+- `setSchema (schema)`
+- `getValidator ()`
+- `validate ()`
+- `applyBareObject (bareObject)`
+- `async setFields (fields, safe)`
+- `async setFieldsSafe (fields)`
+- `async deleteDocument ()`
+
+### `class Collection`
+
+- `newDocument ()`
+- `async findOne (...args)`
+- `async findMany (...args)`
+- `async findOneAndUpdateUnsafe (...args)`
+- `async insertOne (doc, options, safe)`
+- `async insertOneSafe (doc, options)`
+- `async insertMany (docs, options, safe)`
+- `async insertManySafe (docs, options)`
+- `async updateOneUnsafe (...args)`
+- `async updateManyUnsafe (...args)`
+- `async deleteOne (...args)`
+- `async deleteMany (...args)`
+- `async count (...args)`

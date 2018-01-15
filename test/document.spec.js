@@ -69,7 +69,7 @@ describe('MongoDB Document', () => {
 
   beforeEach( async () => {
 
-    await collection.remove({});
+    await collection.deleteMany({});
 
   });
 

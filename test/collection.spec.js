@@ -69,7 +69,7 @@ describe('MongoDB Collection', () => {
 
   beforeEach( async () => {
 
-    await nativeCollection.remove({});
+    await nativeCollection.deleteMany({});
 
   });
 
@@ -358,6 +358,32 @@ describe('MongoDB Collection', () => {
     let count = await collection.count();
 
     expect(count).to.be.equal(docs.length);
+
+  });
+
+  it('should delete many documents', async () => {
+
+    let collection = new TestCollection(db);
+
+    let doc1 = new TestDocument(db);
+    doc1.sort = 1;
+    let doc2 = new TestDocument(db);
+    doc2.sort = 2;
+    let doc3 = { _id: uuid() };
+    doc3.sort = 3;
+    let docs = [ doc1, doc2, doc3 ];
+
+    await collection.insertMany(docs);
+
+    let countBeforeDelte = await collection.count();
+
+    expect(countBeforeDelte).to.be.equal(docs.length);
+
+    await collection.deleteMany({});
+
+    let countAfterDelete = await collection.count();
+
+    expect(countAfterDelete).to.be.equal(0);
 
   });
 
