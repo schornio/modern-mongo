@@ -88,6 +88,8 @@ await persons.insertOneSafe(person);
 - `applyBareObject (bareObject)`
 - `async setFields (fields, safe)`
 - `async setFieldsSafe (fields)`
+- `async incrementFields (fields)`
+- `async incrementFieldsSafe (fields)`
 - `async deleteDocument ()`
 
 ### `class Collection`

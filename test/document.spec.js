@@ -301,6 +301,80 @@ describe('MongoDB Document', () => {
 
   });
 
+  it('should increment fields on document', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    doc.incProp = 2;
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertOne(doc);
+    await doc.incrementFields({ incProp: 3 });
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.incProp).to.be.equal(5);
+    expect(doc.getCollection()).to.be.equal(collection);
+
+  });
+
+  it('should increment fields on document safe', async () => {
+
+    let collection = new TestCollection(db);
+    let doc = new TestDocument(db);
+
+    doc.setSchema({
+      definitions: {
+      },
+      properties: {
+        _id: {
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          type: "string"
+        },
+        incProp: {
+          type: "integer",
+          maximum: 5
+        }
+      },
+      required: [
+        "_id"
+      ],
+      type: "object"
+    });
+
+    doc.incProp = 2;
+
+    let docsBefore = await collection.findMany();
+
+    await collection.insertOne(doc);
+    await doc.incrementFieldsSafe({ incProp: 3 });
+
+    let thrownError = null;
+
+    try {
+
+      await doc.incrementFieldsSafe({ incProp: 1 });
+
+    } catch (error) {
+
+      thrownError = error;
+
+    }
+
+    let docsAfter = await collection.findMany();
+
+    expect(docsBefore).to.deep.equal([]);
+    expect(docsAfter).to.deep.equal([ doc ]);
+    expect(doc.incProp).to.be.equal(5);
+    expect(doc.getCollection()).to.be.equal(collection);
+    expect(thrownError.message).to.be.equal(errors.ERROR_INVALID_DOCUMENT);
+
+  });
+
   it('should delete itself', async () => {
 
     let collection = new TestCollection(db);
