@@ -501,4 +501,41 @@ describe('MongoDB Document', () => {
 
   });
 
+  it('should verify a nullable field', async () => {
+
+    class TestDocument extends Document {
+
+      constructor () {
+        super();
+
+        this.setSchema({
+          definitions: {
+          },
+          properties: {
+            _id: {
+              pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              type: "string"
+            },
+            testNullableProp: {
+              type: "null"
+            }
+          },
+          required: [
+            "_id"
+          ],
+          type: "object"
+        });
+
+      }
+
+    }
+
+    let doc = new TestDocument(db);
+
+    doc.testNullableProp = null;
+
+    expect(doc.validate()).to.be.equal(true);
+
+  });
+
 });
