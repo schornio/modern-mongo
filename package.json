@@ -1,6 +1,6 @@
 {
   "name": "modern-mongo",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "Modern interface for MongoDB. Written in ES8.",
   "main": "index.js",
   "scripts": {
