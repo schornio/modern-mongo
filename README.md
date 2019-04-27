@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/JournalOne/modern-mongo.svg?branch=master)](https://travis-ci.org/JournalOne/modern-mongo)
 
-Modern interface for MongoDB. Written in ES8.
+Class interface for MongoDB.
 
 ## Installation
 
@@ -12,27 +12,16 @@ npm install modern-mongo
 
 **Environment**
 
-- `MODERN_MONGO_VALIDATE`: string, if `false` it turns off Json-Schema validation
+- `MONGODB_CONNECTION`: mongodb connection string, must be provided
 
 ## Example
-
-**0. Initialisation**
-
-```
-const { connect, Document, Collection } = require('modern-mongo');
-
-...
-
-let db = await connect('connectionString');
-```
 
 **1. Create `Document` subclass**
 ```
 class Person extends Document {
 
   constructor() {
-    super();
-    this.setSchema(customJsonSchema);
+    super(customJsonSchema);
   }
 
   // Create custom methods
@@ -41,12 +30,11 @@ class Person extends Document {
 ```
 **2. Create `Collection` subclass**
 ```
-const collectionName = 'persons';
 
 class PersonCollection extends Collection {
 
-  constructor(db) {
-    super(db, PersonDocument, collectionName);
+  constructor() {
+    super(Person);
   }
 
   // Create custom methods
@@ -54,9 +42,11 @@ class PersonCollection extends Collection {
 }
 ```
 
+**Note**: mongodb collection name is the provided document name to lower case. (In this example 'person')
+
 **3. Use your subclasses**
 ```
-let persons = new PersonCollection(db);
+let persons = new PersonCollection();
 let person = new Person();
 
 person.name = 'Thomas';
@@ -69,7 +59,7 @@ await persons.insertOneSafe(person);
 
 **Environment**
 
-- `TEST_DB`: string, MongoDB-Connection-String
+- `MONGODB_CONNECTION`: string, MongoDB-Connection-String
 
 **Command**
 

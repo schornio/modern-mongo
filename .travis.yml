@@ -5,5 +5,6 @@ node_js:
   - "8"
   - "9"
   - "10"
+  - "12"
 env:
-  - MODERN_MONGO_VALIDATE=false TEST_DB="mongodb://127.0.0.1/modern_mongo"
+  - MONGODB_CONNECTION="mongodb://127.0.0.1/modern_mongo"

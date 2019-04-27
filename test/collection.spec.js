@@ -1,18 +1,14 @@
 'use strict';
 
-const TEST_DB = process.env.TEST_DB;
-const COLLECTION_NAME = 'test';
-
 const { expect } = require('chai');
 const uuid = require('uuid/v4');
 
 const errors = require('../lib/errors');
-const { connect, Document, Collection } = require('../index');
+const connect = require('../lib/connect');
+const { Document, Collection } = require('../index');
 
 describe('MongoDB Collection', () => {
 
-  let client = null;
-  let db = null;
   let nativeCollection = null;
 
   class TestDocument extends Document {
@@ -45,9 +41,9 @@ describe('MongoDB Collection', () => {
 
   class TestCollection extends Collection {
 
-    constructor (db) {
+    constructor () {
 
-      super(db, TestDocument, COLLECTION_NAME);
+      super(TestDocument);
 
     }
 
@@ -55,15 +51,8 @@ describe('MongoDB Collection', () => {
 
   before( async () => {
 
-    expect(TEST_DB).to.be.a('string').
-      that.has.lengthOf.above(0);
-
-    let connection = await connect(TEST_DB);
-
-    db = connection.db;
-    client = connection.client;
-
-    nativeCollection = db.collection(COLLECTION_NAME);
+    const { db } = await connect(true);
+    nativeCollection = db.collection(TestDocument.name.toLowerCase());
 
   });
 
@@ -75,13 +64,14 @@ describe('MongoDB Collection', () => {
 
   after( async () => {
 
+    const { client } = await connect();
     await client.close();
 
   });
 
   it('should create a new document which is connected to it self', () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
     let doc = collection.newDocument();
 
@@ -91,11 +81,11 @@ describe('MongoDB Collection', () => {
 
   it('should find one document or return `null`', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -116,11 +106,11 @@ describe('MongoDB Collection', () => {
 
   it('should find one and update document or return `null`', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -145,9 +135,9 @@ describe('MongoDB Collection', () => {
 
   it('should find one by id', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc = new TestDocument(db);
+    let doc = new TestDocument();
 
     let docBefore = await collection.findOneById(doc._id);
     expect(docBefore).to.be.equal(null);
@@ -161,11 +151,11 @@ describe('MongoDB Collection', () => {
 
   it('should find many by ids', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -185,8 +175,8 @@ describe('MongoDB Collection', () => {
 
   it('should insert one modern-mongo document', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     let docsBefore = await collection.findMany();
 
@@ -202,7 +192,7 @@ describe('MongoDB Collection', () => {
 
   it('should insert one bare document', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
     let doc = { _id: uuid() };
 
     let docsBefore = await collection.findMany();
@@ -218,7 +208,7 @@ describe('MongoDB Collection', () => {
 
   it('should insert one bare document', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
     let doc = { _id: uuid() };
 
     let docsBefore = await collection.findMany();
@@ -234,7 +224,7 @@ describe('MongoDB Collection', () => {
 
   it('should insert one document safe', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
     let validDoc = { _id: uuid(), testProp: 'valid' };
     let invalidDoc = { _id: uuid(), testProp: 'invalid' };
@@ -264,11 +254,11 @@ describe('MongoDB Collection', () => {
 
   it('should insert many documents', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -287,11 +277,11 @@ describe('MongoDB Collection', () => {
 
   it('should insert many documents safe', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -325,11 +315,11 @@ describe('MongoDB Collection', () => {
 
   it('should update one', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -352,11 +342,11 @@ describe('MongoDB Collection', () => {
 
   it('should update many', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -383,11 +373,11 @@ describe('MongoDB Collection', () => {
 
   it('should count documents', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;
@@ -401,13 +391,39 @@ describe('MongoDB Collection', () => {
 
   });
 
+  it('should delete one document', async () => {
+
+    let collection = new TestCollection();
+
+    let doc1 = new TestDocument();
+    doc1.sort = 1;
+    let doc2 = new TestDocument();
+    doc2.sort = 2;
+    let doc3 = { _id: uuid() };
+    doc3.sort = 3;
+    let docs = [ doc1, doc2, doc3 ];
+
+    await collection.insertMany(docs);
+
+    let countBeforeDelte = await collection.count();
+
+    expect(countBeforeDelte).to.be.equal(docs.length);
+
+    await collection.deleteOne({ _id: doc2._id });
+
+    let countAfterDelete = await collection.count();
+
+    expect(countAfterDelete).to.be.equal(2);
+
+  });
+
   it('should delete many documents', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
     let doc3 = { _id: uuid() };
     doc3.sort = 3;

@@ -1,26 +1,20 @@
 'use strict';
 
-const TEST_DB = process.env.TEST_DB;
-const COLLECTION_NAME = 'test';
-
 const { expect } = require('chai');
 const uuid = require('uuid/v4');
 
 const errors = require('../lib/errors');
-const { connect, Document, Collection } = require('../index');
+const connect = require('../lib/connect');
+const { Document, Collection } = require('../index');
 
 describe('MongoDB Document', () => {
 
-  let client = null;
-  let db = null;
-  let collection = null;
+  let nativeCollection = null;
 
   class TestDocument extends Document {
 
     constructor () {
-      super();
-
-      this.setSchema({
+      super({
         definitions: {
         },
         properties: {
@@ -45,9 +39,9 @@ describe('MongoDB Document', () => {
 
   class TestCollection extends Collection {
 
-    constructor (db) {
+    constructor () {
 
-      super(db, TestDocument, COLLECTION_NAME);
+      super(TestDocument);
 
     }
 
@@ -55,33 +49,27 @@ describe('MongoDB Document', () => {
 
   before( async () => {
 
-    expect(TEST_DB).to.be.a('string').
-      that.has.lengthOf.above(0);
-
-    let connection = await connect(TEST_DB);
-
-    db = connection.db;
-    client = connection.client;
-
-    collection = db.collection(COLLECTION_NAME);
+    const { db } = await connect(true);
+    nativeCollection = db.collection(TestDocument.name.toLowerCase());
 
   });
 
   beforeEach( async () => {
 
-    await collection.deleteMany({});
+    await nativeCollection.deleteMany({});
 
   });
 
   after( async () => {
 
+    const { client } = await connect();
     await client.close();
 
   });
 
   it('should throw error if document is not associated with a collection', () => {
 
-    let testDocument = new TestDocument(db);
+    let testDocument = new TestDocument();
 
     let thrownError = null;
 
@@ -101,7 +89,7 @@ describe('MongoDB Document', () => {
 
   it('should get document schema', () => {
 
-    let testDocument = new TestDocument(db);
+    let testDocument = new TestDocument();
     let schema = testDocument.getSchema();
 
     expect(schema).to.deep.equal({
@@ -127,7 +115,7 @@ describe('MongoDB Document', () => {
 
   it('should validate document', () => {
 
-    let testDocument = new TestDocument(db);
+    let testDocument = new TestDocument();
 
     expect(testDocument.validate()).to.be.equal(true);
 
@@ -139,7 +127,7 @@ describe('MongoDB Document', () => {
 
   it('should apply all fields from a JavaScript object', () => {
 
-    let testDocument = new TestDocument(db);
+    let testDocument = new TestDocument();
 
     testDocument.applyBareObject({
 
@@ -162,7 +150,7 @@ describe('MongoDB Document', () => {
 
   it('should throw an error if a reserved keyword would be applied', () => {
 
-    let testDocument = new TestDocument(db);
+    let testDocument = new TestDocument();
 
     let thrownError = null;
 
@@ -186,8 +174,8 @@ describe('MongoDB Document', () => {
 
   it('should set fields on document', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     let docsBefore = await collection.findMany();
 
@@ -204,8 +192,8 @@ describe('MongoDB Document', () => {
 
   it('should set fields on document safe', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     let docsBefore = await collection.findMany();
 
@@ -235,8 +223,8 @@ describe('MongoDB Document', () => {
 
   it('should set fields on document deep', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     doc.arrProp = [];
 
@@ -261,8 +249,8 @@ describe('MongoDB Document', () => {
 
   it('should validate fields on document deep', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     doc.setSchema({
       additionalProperties: false,
@@ -303,8 +291,8 @@ describe('MongoDB Document', () => {
 
   it('should increment fields on document', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     doc.incProp = 2;
 
@@ -324,8 +312,8 @@ describe('MongoDB Document', () => {
 
   it('should increment fields on document safe', async () => {
 
-    let collection = new TestCollection(db);
-    let doc = new TestDocument(db);
+    let collection = new TestCollection();
+    let doc = new TestDocument();
 
     doc.setSchema({
       definitions: {
@@ -377,13 +365,13 @@ describe('MongoDB Document', () => {
 
   it('should delete itself', async () => {
 
-    let collection = new TestCollection(db);
+    let collection = new TestCollection();
 
-    let doc1 = new TestDocument(db);
+    let doc1 = new TestDocument();
     doc1.sort = 1;
-    let doc2 = new TestDocument(db);
+    let doc2 = new TestDocument();
     doc2.sort = 2;
-    let doc3 = new TestDocument(db);
+    let doc3 = new TestDocument();
     doc3.sort = 3;
     let docs = [ doc1, doc2, doc3 ];
 
@@ -402,7 +390,7 @@ describe('MongoDB Document', () => {
 
   it('should verify _id is a uuid', async () => {
 
-    let doc = new Document(db);
+    let doc = new Document();
 
     doc._id = "012345678-0123-0123-0123-01234567890AB";
 
@@ -451,7 +439,7 @@ describe('MongoDB Document', () => {
 
     }
 
-    let doc = new TestDocument(db);
+    let doc = new TestDocument();
 
     doc.testArray = [ new Date() ];
 
@@ -493,7 +481,7 @@ describe('MongoDB Document', () => {
 
     }
 
-    let doc = new TestDocument(db);
+    let doc = new TestDocument();
 
     doc.testDateProp = new Date();
 
@@ -530,7 +518,7 @@ describe('MongoDB Document', () => {
 
     }
 
-    let doc = new TestDocument(db);
+    let doc = new TestDocument();
 
     doc.testNullableProp = null;
 
