@@ -9,6 +9,7 @@ const { Document, Collection } = require('../index');
 
 describe('MongoDB Collection', () => {
 
+  let db = null;
   let nativeCollection = null;
 
   class TestDocument extends Document {
@@ -51,7 +52,8 @@ describe('MongoDB Collection', () => {
 
   before( async () => {
 
-    const { db } = await connect(true);
+    const connection = await connect(true);
+    db = connection.db;
     nativeCollection = db.collection(TestDocument.name.toLowerCase());
 
   });
@@ -440,6 +442,35 @@ describe('MongoDB Collection', () => {
     let countAfterDelete = await collection.count();
 
     expect(countAfterDelete).to.be.equal(0);
+
+  });
+
+  it('should drop its collection', async () => {
+
+    const collectionName = uuid();
+
+    class TestDroppableCollection extends Collection {
+
+      constructor () {
+
+        super(TestDocument, collectionName);
+
+      }
+
+    }
+
+    let collection = new TestDroppableCollection();
+    await collection.insertOne(new TestDocument());
+
+    const collectionsBeforeDrop = await db.collections();
+    expect(collectionsBeforeDrop.map((collection) => collection.collectionName))
+      .to.include(collectionName);
+
+    await collection.drop();
+
+    const collectionsAfterDrop = await db.collections();
+    expect(collectionsAfterDrop.map((collection) => collection.collectionName))
+      .not.include(collectionName);
 
   });
 
