@@ -4,8 +4,8 @@ const { expect } = require('chai');
 const uuid = require('uuid/v4');
 
 const errors = require('../lib/errors');
-const connect = require('../lib/connect');
-const { Document, Collection } = require('../index');
+const { connect } = require('../lib/connect');
+const { Document, Collection, closeAllConnections } = require('../index');
 
 describe('MongoDB Collection', () => {
 
@@ -66,8 +66,7 @@ describe('MongoDB Collection', () => {
 
   after( async () => {
 
-    const { client } = await connect();
-    await client.close();
+    await closeAllConnections();
 
   });
 
