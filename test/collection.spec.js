@@ -473,4 +473,27 @@ describe('MongoDB Collection', () => {
 
   });
 
+  it('should create an index', async () => {
+
+    const collectionName = uuid();
+
+    class CollectionWithIndex extends Collection {
+
+      constructor () {
+
+        super(TestDocument, collectionName);
+
+      }
+
+    }
+
+    let collection = new CollectionWithIndex();
+
+    const indexName = await collection.createIndex({ foo: 1 });
+    const indexExists = await collection.indexExists(indexName);
+
+    expect(indexExists).to.be.equal(true);
+
+  });
+
 });
