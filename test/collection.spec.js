@@ -444,6 +444,33 @@ describe('MongoDB Collection', () => {
 
   });
 
+  it('should test if it self exists on the db', async () => {
+
+    const collectionName = uuid();
+
+    class NewCollection extends Collection {
+
+      constructor () {
+
+        super(TestDocument, collectionName);
+
+      }
+
+    }
+
+    const collection = new NewCollection();
+
+    const existsBeforeInsert = await collection.exists();
+
+    await collection.insertOne(new TestDocument());
+
+    const existsAfterInsert = await collection.exists();
+
+    expect(existsBeforeInsert).to.be.equal(false);
+    expect(existsAfterInsert).to.be.equal(true);
+
+  });
+
   it('should drop its collection', async () => {
 
     const collectionName = uuid();
@@ -469,6 +496,46 @@ describe('MongoDB Collection', () => {
 
     const collectionsAfterDrop = await db.collections();
     expect(collectionsAfterDrop.map((collection) => collection.collectionName))
+      .not.include(collectionName);
+
+  });
+
+  it('should drop its collection if it exists', async () => {
+
+    const collectionName = uuid();
+
+    class TestDroppableCollection extends Collection {
+
+      constructor () {
+
+        super(TestDocument, collectionName);
+
+      }
+
+    }
+
+    const collection = new TestDroppableCollection();
+
+    const collectionsBeforeFirstDrop = await db.collections();
+    expect(collectionsBeforeFirstDrop.map((collection) => collection.collectionName))
+      .not.include(collectionName);
+
+    await collection.dropIfExists();
+
+    const collectionsAfterFirstDrop = await db.collections();
+    expect(collectionsAfterFirstDrop.map((collection) => collection.collectionName))
+      .not.include(collectionName);
+
+    await collection.insertOne(new TestDocument());
+
+    const collectionsBeforeSecondDrop = await db.collections();
+    expect(collectionsBeforeSecondDrop.map((collection) => collection.collectionName))
+      .to.include(collectionName);
+
+    await collection.dropIfExists();
+
+    const collectionsAfterSecondDrop = await db.collections();
+    expect(collectionsAfterSecondDrop.map((collection) => collection.collectionName))
       .not.include(collectionName);
 
   });

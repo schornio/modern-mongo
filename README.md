@@ -99,6 +99,8 @@ await persons.insertOneSafe(person);
 - `async deleteOne (...args)`
 - `async deleteMany (...args)`
 - `async count (...args)`
+- `async exists ()`
 - `async createIndex (...args)`
 - `async indexExists (...args)`
 - `async drop (...args)`
+- `async dropIfExists (...args)`
